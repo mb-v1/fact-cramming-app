@@ -17,7 +17,9 @@ function App() {
         if (currentDeckId && parsed[currentDeckId]) {
           return {
             ...parsed[currentDeckId],
-            rememberedCards: new Set<string>(parsed[currentDeckId].rememberedCards || [])
+            rememberedCards: new Set<string>(parsed[currentDeckId].rememberedCards || []),
+            requiredStreak: parsed[currentDeckId].requiredStreak || 1,
+            streaks: parsed[currentDeckId].streaks || {}
           };
         }
       } catch (e) {
@@ -30,7 +32,9 @@ function App() {
       queue: [],
       queueSize: 5,
       selectionMode: 'random' as const,
-      rememberedCards: new Set<string>()
+      rememberedCards: new Set<string>(),
+      requiredStreak: 2,
+      streaks: {}
     };
   });
   const [currentCard, setCurrentCard] = useState<Card | null>(null);
@@ -86,7 +90,9 @@ function App() {
       queue: deckState.cards.slice(0, deckState.queueSize),
       queueSize: deckState.queueSize,
       selectionMode: deckState.selectionMode,
-      rememberedCards: new Set<string>()
+      rememberedCards: new Set<string>(),
+      requiredStreak: deckState.requiredStreak,
+      streaks: deckState.streaks
     };
     setDeckState(newState);
     setShowAnswer(false);
@@ -134,11 +140,28 @@ function App() {
     setShowAnswer(true);
   };
 
+  const handleStreakRequirementChange = (newStreak: number) => {
+    setDeckState(prev => ({
+      ...prev,
+      requiredStreak: newStreak
+    }));
+  };
+
   const handleResponse = useCallback((remembered: boolean) => {
     if (!currentCard) return;
 
-    if (remembered) {
-      setDeckState(prev => {
+    setDeckState(prev => {
+      const newStreaks = { ...prev.streaks };
+      
+      if (remembered) {
+        newStreaks[currentCard.id] = (newStreaks[currentCard.id] || 0) + 1;
+      } else {
+        newStreaks[currentCard.id] = 0;
+      }
+
+      const hasMetStreakRequirement = newStreaks[currentCard.id] >= prev.requiredStreak;
+
+      if (remembered && hasMetStreakRequirement) {
         const newQueue = prev.queue.filter(card => card.id !== currentCard.id);
         let nextCard = null;
         let newRememberedCards = new Set(prev.rememberedCards);
@@ -176,11 +199,10 @@ function App() {
         return {
           ...prev,
           queue: newQueue,
-          rememberedCards: newRememberedCards
+          rememberedCards: newRememberedCards,
+          streaks: newStreaks
         };
-      });
-    } else {
-      setDeckState(prev => {
+      } else {
         const remainingCards = prev.queue.filter(card => card.id !== currentCard.id);
         const newQueue = [...remainingCards];
         
@@ -191,9 +213,10 @@ function App() {
         return {
           ...prev,
           queue: newQueue,
+          streaks: newStreaks
         };
-      });
-    }
+      }
+    });
 
     setShowAnswer(false);
     setShowSettings(false);
@@ -217,7 +240,9 @@ function App() {
         queue: savedState.queue,
         queueSize: savedState.queueSize || 5,
         selectionMode: savedState.selectionMode || 'random',
-        rememberedCards: new Set<string>(savedState.rememberedCards || [])
+        rememberedCards: new Set<string>(savedState.rememberedCards || []),
+        requiredStreak: savedState.requiredStreak || 1,
+        streaks: savedState.streaks || {}
       });
     } else {
       setDeckState({
@@ -225,7 +250,9 @@ function App() {
         queue: newCards.slice(0, 5),
         queueSize: 5,
         selectionMode: 'random',
-        rememberedCards: new Set<string>()
+        rememberedCards: new Set<string>(),
+        requiredStreak: 2,
+        streaks: {}
       });
     }
     
@@ -324,13 +351,25 @@ function App() {
                 </button>
                 {showSettings && (
                   <div className="settings-panel">
-                    <div className="control-buttons">
-                      <button onClick={handleReset}>Reset Queue</button>
-                      <button onClick={handleLoadNewDeck}>Load New Deck</button>
+                    <div className="settings-header">
+                      <h3>Settings</h3>
+                      <div className="control-buttons">
+                        <button onClick={handleReset}>Reset Progress</button>
+                        <button onClick={handleLoadNewDeck}>New Deck</button>
+                      </div>
                     </div>
-                    <div className="queue-size-control">
-                      <label>
-                        Queue Size:
+                    
+                    <div className="settings-group">
+                      <div className="setting-item">
+                        <div className="setting-label">
+                          Queue Size
+                          <div className="tooltip">
+                            <span className="tooltip-icon">?</span>
+                            <div className="tooltip-text">
+                              Number of cards that will be kept in rotation at once
+                            </div>
+                          </div>
+                        </div>
                         <input
                           type="number"
                           min="1"
@@ -338,11 +377,19 @@ function App() {
                           value={deckState.queueSize}
                           onChange={(e) => handleQueueSizeChange(Math.max(1, parseInt(e.target.value) || 1))}
                         />
-                      </label>
-                    </div>
-                    <div className="selection-mode-control">
-                      <label>
-                        Card Selection:
+                      </div>
+
+                      <div className="setting-item">
+                        <div className="setting-label">
+                          Card Selection
+                          <div className="tooltip">
+                            <span className="tooltip-icon">?</span>
+                            <div className="tooltip-text">
+                              Random: Cards are selected randomly from the deck<br/>
+                              Sequential: Cards are selected in order
+                            </div>
+                          </div>
+                        </div>
                         <select
                           value={deckState.selectionMode}
                           onChange={(e) => handleSelectionModeChange(e.target.value as 'random' | 'sequential')}
@@ -350,7 +397,26 @@ function App() {
                           <option value="random">Random</option>
                           <option value="sequential">Sequential</option>
                         </select>
-                      </label>
+                      </div>
+
+                      <div className="setting-item">
+                        <div className="setting-label">
+                          Times to Remember
+                          <div className="tooltip">
+                            <span className="tooltip-icon">?</span>
+                            <div className="tooltip-text">
+                              Number of consecutive correct answers needed before a card is removed
+                            </div>
+                          </div>
+                        </div>
+                        <input
+                          type="number"
+                          min="1"
+                          max="10"
+                          value={deckState.requiredStreak}
+                          onChange={(e) => handleStreakRequirementChange(Math.max(1, parseInt(e.target.value) || 1))}
+                        />
+                      </div>
                     </div>
                   </div>
                 )}

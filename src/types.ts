@@ -12,4 +12,6 @@ export interface DeckState {
   queueSize: number;
   selectionMode: 'random' | 'sequential';
   rememberedCards: Set<string>;
+  requiredStreak: number;
+  streaks: Record<string, number>;
 } 
