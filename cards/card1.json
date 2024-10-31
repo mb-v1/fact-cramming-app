@@ -1,0 +1,20 @@
+[
+    {
+      "id": "1",
+      "prompt": "What animal is this?",
+      "promptImage": "https://example.com/path/to/dog-image.jpg",
+      "answer": "This is a dog"
+    },
+    {
+      "id": "2",
+      "prompt": "What does this chemical structure represent?",
+      "promptImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...",
+      "answer": "Caffeine molecule",
+      "answerImage": "https://example.com/path/to/caffeine-details.jpg"
+    },
+    {
+      "id": "3",
+      "prompt": "Regular text card without images",
+      "answer": "Just a text answer"
+    }
+  ]
