@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/fact-cramming-app/static/css/main.c27d1c72.css",
-    "main.js": "/fact-cramming-app/static/js/main.216c9c9a.js",
+    "main.css": "/fact-cramming-app/static/css/main.8e97a063.css",
+    "main.js": "/fact-cramming-app/static/js/main.953fcaf2.js",
     "static/js/453.7a8e2daf.chunk.js": "/fact-cramming-app/static/js/453.7a8e2daf.chunk.js",
     "index.html": "/fact-cramming-app/index.html",
-    "main.c27d1c72.css.map": "/fact-cramming-app/static/css/main.c27d1c72.css.map",
-    "main.216c9c9a.js.map": "/fact-cramming-app/static/js/main.216c9c9a.js.map",
+    "main.8e97a063.css.map": "/fact-cramming-app/static/css/main.8e97a063.css.map",
+    "main.953fcaf2.js.map": "/fact-cramming-app/static/js/main.953fcaf2.js.map",
     "453.7a8e2daf.chunk.js.map": "/fact-cramming-app/static/js/453.7a8e2daf.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.c27d1c72.css",
-    "static/js/main.216c9c9a.js"
+    "static/css/main.8e97a063.css",
+    "static/js/main.953fcaf2.js"
   ]
 }
